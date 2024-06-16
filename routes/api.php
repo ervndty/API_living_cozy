@@ -10,7 +10,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\WishlistItemController;
 use App\Http\Controllers\ShoppingCartController;
-use App\Http\Controllers\PaymentsController;
+use App\Http\Controllers\PaymentController;
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -28,12 +28,14 @@ Route::get('products', [ProductController::class, 'index']);
 Route::get('products/{id}', [ProductController::class, 'show']);
 Route::get('products/category/{category_id}', [ProductController::class, 'getByCategory']);
 Route::get('categories', [ProductController::class, 'getAllCategories']);
-
+Route::post('/products', [ProductController::class, 'store']);
+Route::put('/products/{id}', [ProductController::class, 'update']);
+Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
 Route::get('products/{productId}/images', [ProductImageController::class, 'index']);
 Route::post('products/{productId}/images', [ProductImageController::class, 'store']);
 Route::delete('products/{productId}/images/{imageId}', [ProductImageController::class, 'destroy']);
-
+Route::put('/products/{productId}/images/{imageId}', [ProductImageController::class, 'update']);
 
 Route::get('/orders', [OrderController::class, 'index']);
 Route::post('/orders', [OrderController::class, 'store']);
@@ -65,5 +67,6 @@ Route::delete('/shopping-carts/{id}', [ShoppingCartController::class, 'destroy']
 
 
 
-Route::post('/payments', [PaymentsController::class, 'create']);
-Route::get('/payments/{order_id}', [PaymentsController::class, 'getPaymentStatus']);
+Route::post('/payments', [PaymentController::class, 'create']);
+// Route::post('/payments', [PaymentController::class, 'createPayment']);
+// Route::post('/payments/notification', [PaymentController::class, 'paymentNotification']);

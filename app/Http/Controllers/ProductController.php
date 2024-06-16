@@ -50,6 +50,27 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
+    public function store(Request $request)
+    {
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'category_id' => 'required|exists:categories,category_id',
+            'product_name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|numeric|min:0',
+            // tambahkan validasi lainnya sesuai kebutuhan
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        // Membuat produk baru
+        $product = Product::create($request->all());
+        return response()->json(['product' => $product], 201);
+    }
+
     public function show($id)
     {
         $product = Product::find($id);
@@ -77,4 +98,46 @@ class ProductController extends Controller
         $categories = Product::pluck('category_id')->unique();
         return response()->json($categories);
     }
+
+    public function update(Request $request, $id)
+    {
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'category_id' => 'exists:categories,id',
+            'product_name' => 'string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'numeric|min:0',
+            'stock' => 'required|numeric|min:0',
+            // tambahkan validasi lainnya sesuai kebutuhan
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        // Temukan produk berdasarkan ID
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['error' => 'Product not found.'], 404);
+        }
+
+        // Perbarui produk
+        $product->update($request->all());
+        return response()->json(['product' => $product], 200);
+    }
+
+    public function destroy($id)
+    {
+        // Temukan produk berdasarkan ID
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['error' => 'Product not found.'], 404);
+        }
+
+        // Hapus produk
+        $product->delete();
+        return response()->json(['message' => 'Product deleted successfully.'], 200);
+    }
+
+
 }

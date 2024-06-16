@@ -7,6 +7,7 @@ use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
+
 class ProductImageController extends Controller
 {
     public function index($productId)
@@ -42,6 +43,34 @@ class ProductImageController extends Controller
 
         return response()->json($productImage, 201);
     }
+
+    public function update(Request $request, $productId, $imageId)
+    {
+        $validator = Validator::make($request->all(), [
+            'image_url' => 'required|url',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $product = Product::find($productId);
+        if (!$product) {
+            return response()->json(['error' => 'Product not found.'], 404);
+        }
+
+        $productImage = ProductImage::where('product_id', $productId)->find($imageId);
+        if (!$productImage) {
+            return response()->json(['error' => 'Product image not found.'], 404);
+        }
+
+        // Update URL gambar produk
+        $productImage->image_url = $request->input('image_url');
+        $productImage->save();
+
+        return response()->json($productImage);
+    }
+
 
     public function destroy($productId, $imageId)
     {

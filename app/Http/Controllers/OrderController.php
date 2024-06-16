@@ -18,8 +18,8 @@ class OrderController extends Controller
     {
         // Validasi input
         $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,user_id', // Corrected validation rule
-            'product_id' => 'required|exists:products,product_id', // Corrected validation rule
+            'user_id' => 'required|exists:users,user_id', 
+            'product_id' => 'required|exists:products,product_id', 
             'quantity' => 'required|integer|min:1',
             'price' => 'required|numeric|min:0',
         ]);
@@ -47,8 +47,8 @@ class OrderController extends Controller
     {
         // Validasi input
         $validator = Validator::make($request->all(), [
-            'user_id' => 'exists:users,user_id', // Corrected validation rule
-            'product_id' => 'exists:products,id', // Corrected validation rule
+            'user_id' => 'exists:users,user_id', 
+            'product_id' => 'exists:products,product_id', 
             'quantity' => 'integer|min:1',
             'price' => 'numeric|min:0',
         ]);
