@@ -14,5 +14,14 @@ class Review extends Model
         'user_id',
         'rating',
         'comment',
+        'photo_path',
     ];
+
+ 
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
+
 }

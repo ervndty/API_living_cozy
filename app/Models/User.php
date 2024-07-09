@@ -22,6 +22,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'jenis_kelamin',
+        'no_hp',
+        'tgl_lahir',
+        'alamat',
     ];
 
     /**
@@ -46,4 +50,6 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    
 }

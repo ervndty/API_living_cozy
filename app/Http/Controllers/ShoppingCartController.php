@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ShoppingCart;
 
 class ShoppingCartController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $shoppingCarts = ShoppingCart::all();
+        $user = $request->user(); // Assuming token-based authentication
+
+        // Eager load the related product data for the authenticated user
+        $shoppingCarts = ShoppingCart::with('product')
+                                     ->where('user_id', $user->user_id)
+                                     ->get();
 
         return response()->json(['shopping_carts' => $shoppingCarts]);
     }
@@ -18,49 +22,53 @@ class ShoppingCartController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'product_id' => 'required|exists:products,id',
+            'user_id' => 'required|exists:users,user_id',
+            'product_id' => 'required|exists:products,product_id',
             'quantity' => 'required|integer|min:1',
         ]);
 
-        $shoppingCart = ShoppingCart::create([
-            'user_id' => $request->user_id,
-            'product_id' => $request->product_id,
-            'quantity' => $request->quantity,
-        ]);
+        $shoppingCart = ShoppingCart::where('user_id', $request->user()->user_id)
+                                    ->where('product_id', $request->product_id)
+                                    ->first();
+
+        if ($shoppingCart) {
+            $shoppingCart->quantity += $request->quantity;
+            $shoppingCart->save();
+        } else {
+            $shoppingCart = ShoppingCart::create([
+                'user_id' => $request->user()->user_id,
+                'product_id' => $request->product_id,
+                'quantity' => $request->quantity,
+            ]);
+        }
 
         return response()->json(['shopping_cart' => $shoppingCart], 201);
     }
 
-    public function show($id)
-    {
-        $shoppingCart = ShoppingCart::findOrFail($id);
-
-        return response()->json(['shopping_cart' => $shoppingCart]);
-    }
-
-    public function update(Request $request, $id)
+    public function update(Request $request, $product_id)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
         ]);
 
-        $shoppingCart = ShoppingCart::findOrFail($id);
-        $shoppingCart->user_id = $request->user_id;
-        $shoppingCart->product_id = $request->product_id;
+        $shoppingCart = ShoppingCart::where('user_id', $request->user()->user_id)
+                                    ->where('product_id', $product_id)
+                                    ->firstOrFail();
+
         $shoppingCart->quantity = $request->quantity;
         $shoppingCart->save();
 
         return response()->json(['shopping_cart' => $shoppingCart], 200);
     }
 
-    public function destroy($id)
-    {
-        $shoppingCart = ShoppingCart::findOrFail($id);
-        $shoppingCart->delete();
+    public function destroy(Request $request, $cart_id)
+{
+    $shoppingCart = ShoppingCart::where('user_id', $request->user()->user_id)
+                                ->where('cart_id', $cart_id)
+                                ->firstOrFail();
 
-        return response()->json(null, 204);
-    }
+    $shoppingCart->delete();
+
+    return response()->json(null, 204);
+}
 }

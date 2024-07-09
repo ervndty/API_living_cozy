@@ -3,17 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use App\Http\Resources\CategoryResource;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function index()
-{
-    $categories = Category::all();
-    return CategoryResource::collection($categories);
-}
+    public function getCategoryCount()
+    {
+        $count = Category::count();
+        return response()->json(['jumlah_category' => $count]);
+    }
 
+    public function index()
+    {
+        $categories = Category::all();
+        return response()->json($categories);
+    }
 
     public function store(Request $request)
     {
@@ -25,28 +29,15 @@ class CategoryController extends Controller
             'nama_kategori' => $request->nama_kategori,
         ]);
 
-        return new CategoryResource($category);
+        return response()->json($category, 201);
     }
 
     public function show($id)
     {
         $category = Category::findOrFail($id);
-        return new CategoryResource($category);
+        return response()->json($category);
     }
 
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'nama_kategori' => 'required|unique:categories,nama_kategori,' . $id,
-        ]);
-
-        $category = Category::findOrFail($id);
-        $category->update([
-            'nama_kategori' => $request->nama_kategori,
-        ]);
-
-        return new CategoryResource($category);
-    }
 
     public function destroy($id)
     {
@@ -61,9 +52,22 @@ class CategoryController extends Controller
         $category = Category::where('nama_kategori', $name)->first();
 
         if ($category) {
-            return new CategoryResource($category);
+            return response()->json($category);
         } else {
             return response()->json(['message' => 'Category not found'], 404);
         }
     }
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nama_kategori' => 'required|unique:categories,nama_kategori,' . $id . ',category_id',
+        ]);
+
+        $category = Category::findOrFail($id);
+        $category->nama_kategori = $request->nama_kategori;
+        $category->save();
+
+        return response()->json($category);
+    }
 }
+

@@ -17,9 +17,10 @@ class Product extends Model
         'price',
         'stock',
         'category_id',
+        'image_url',
     ];
 
-
+    // Relationship to the Category model
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');

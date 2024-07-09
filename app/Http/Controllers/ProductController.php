@@ -8,14 +8,23 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
+    public function getProductCount()
+    {
+        $count = Product::count();
+        return response()->json(['jumlah_product' => $count]);
+    }
+
     public function index(Request $request)
     {
         $products = Product::query();
-
-        // Filter by category
-        if ($request->has('category_id')) {
-            $products->where('category_id', $request->category_id);
+        if ($request->has('category')) {
+            $category = $request->category;
+            $categoryId = \App\Models\Category::where('nama_kategori', $category)->value('category_id');
+            if ($categoryId) {
+                $products->where('category_id', $categoryId);
+            }
         }
+       
 
         // Search by name
         if ($request->has('search')) {
@@ -44,7 +53,7 @@ class ProductController extends Controller
         }
 
         // Paginate the results
-        $limit = $request->query('limit', 10);
+        $limit = $request->query('limit', 8);
         $products = $products->paginate($limit);
 
         return response()->json($products);
@@ -52,6 +61,12 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        // Remove backslashes from image_url using regex
+        if ($request->has('image_url')) {
+            $cleanedImageUrl = preg_replace('/\\\\/', '', $request->image_url);
+            $request->merge(['image_url' => $cleanedImageUrl]);
+        }
+
         // Validasi input
         $validator = Validator::make($request->all(), [
             'category_id' => 'required|exists:categories,category_id',
@@ -59,6 +74,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|numeric|min:0',
+            'image_url' => 'required|url',
             // tambahkan validasi lainnya sesuai kebutuhan
         ]);
 
@@ -101,30 +117,37 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validasi input
+        // Remove backslashes from image_url using regex
+        if ($request->has('image_url')) {
+            $cleanedImageUrl = preg_replace('/\\\\/', '', $request->image_url);
+            $request->merge(['image_url' => $cleanedImageUrl]);
+        }
+
+        // Validate input
         $validator = Validator::make($request->all(), [
-            'category_id' => 'exists:categories,id',
+            'category_id' => 'exists:categories,category_id',
             'product_name' => 'string|max:255',
             'description' => 'nullable|string',
             'price' => 'numeric|min:0',
             'stock' => 'required|numeric|min:0',
-            // tambahkan validasi lainnya sesuai kebutuhan
+            'image_url' => 'url',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Temukan produk berdasarkan ID
+        // Find product by ID
         $product = Product::find($id);
         if (!$product) {
             return response()->json(['error' => 'Product not found.'], 404);
         }
 
-        // Perbarui produk
+        // Update product
         $product->update($request->all());
         return response()->json(['product' => $product], 200);
     }
+
 
     public function destroy($id)
     {
@@ -138,6 +161,5 @@ class ProductController extends Controller
         $product->delete();
         return response()->json(['message' => 'Product deleted successfully.'], 200);
     }
-
-
 }
+

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->integer('rating')->check('rating >= 1 AND rating <= 5');
             $table->text('comment')->nullable();
+            $table->string('photo_path')->nullable();
             $table->timestamps();
             
             $table->foreign('product_id')->references('product_id')->on('products')->onDelete('cascade');
@@ -32,3 +33,4 @@ return new class extends Migration
         Schema::dropIfExists('reviews');
     }
 };
+

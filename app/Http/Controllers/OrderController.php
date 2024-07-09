@@ -7,10 +7,14 @@ use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Menampilkan semua orders
-        $orders = Order::all();
+    // Mendapatkan user yang sedang login
+        $user = $request->user();
+
+    // Menampilkan semua orders milik user yang sedang login
+        $orders = Order::where('user_id', $user->user_id)->get();
+    
         return response()->json(['orders' => $orders], 200);
     }
 

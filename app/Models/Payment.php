@@ -18,6 +18,13 @@ class Payment extends Model
         'item_name',
         'checkout_link'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    
 }
 
 
